@@ -40,6 +40,13 @@ public:
 		}
 	}
 
+	void Player::Reset()
+	{
+		mLives = 3; // Reset lives back to the initial value
+		// Optionally notify listeners that the player has been "reset"
+		FirePlayerKilled(); // You might want to modify this method if you need a different notification for reset vs lives decreased
+	}
+
 private:
 	int mLives;
 

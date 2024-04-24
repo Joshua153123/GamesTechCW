@@ -30,6 +30,14 @@ public:
 		mListeners.push_back(listener);
 	}
 
+
+	void ScoreKeeper::Reset()
+	{
+		mScore = 0; // Reset score to zero
+		FireScoreChanged(); // Notify all listeners about the score change
+	}
+
+
 	void FireScoreChanged()
 	{
 		// Send message to all listeners

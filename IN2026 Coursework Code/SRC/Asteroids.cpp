@@ -122,17 +122,7 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 	if (gameOver) {
 		startScreenActive = true;
 		gameOver = false;
-		mGameDisplay->GetContainer()->RemoveComponent(static_pointer_cast<GUIComponent>(mStartLabel));
-		// Create a spaceship and add it to the world
-		mGameWorld->AddObject(CreateSpaceship());
-		// Create some asteroids and add them to the world
-		CreateAsteroids(10);
-
-		//Create the GUI
-		CreateGUI();
-
-		// Start the game
-		GameSession::Start();
+		RestartGame();
 
 	}
 	else {
@@ -167,6 +157,13 @@ void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 		// Start the game
 		GameSession::Start();
 
+
+	}
+
+	if (gameOver) {
+		startScreenActive = true;
+		gameOver = false;
+		RestartGame();
 
 	}
 	switch (key)
@@ -410,23 +407,33 @@ shared_ptr<GameObject> Asteroids::CreateExplosion()
 
 void Asteroids::RestartGame()
 {
-	if (startScreenActive) {
-		DisplayStartScreen();
-	}
-
-	else {// Create a spaceship and add it to the world
-		mGameWorld->AddObject(CreateSpaceship());
-		// Create some asteroids and add them to the world
-		CreateAsteroids(10);
-
-		//Create the GUI
-		CreateGUI();
+	mLevel = 0;
+	mAsteroidCount = 0;
+	mScoreKeeper.Reset();  // Reset score
 
 
-		// Start the game session again
-		GameSession::Start();
-	}
+
+	// Hide the game over label
+	mGameOverLabel->SetVisible(false);
+
+	// Reset player lives and other necessary states
+	mPlayer.Reset();  //  method to reset player lives
+
+	mGameDisplay->GetContainer()->RemoveComponent(static_pointer_cast<GUIComponent>(mScoreLabel));
+	mGameDisplay->GetContainer()->RemoveComponent(static_pointer_cast<GUIComponent>(mGameOverLabel));
+	mGameDisplay->GetContainer()->RemoveComponent(static_pointer_cast<GUIComponent>(mLivesLabel));
+
+
+
+	// Recreate the game environment
+	CreateAsteroids(10);
+	mGameWorld->AddObject(CreateSpaceship());
+	CreateGUI();  // Reinitialize the GUI components if necessary
+
+	// Start the game session again
+	GameSession::Start();
 }
+
 
 
 
