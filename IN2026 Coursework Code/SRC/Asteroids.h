@@ -21,6 +21,7 @@ public:
 	virtual ~Asteroids(void);
 
 	virtual void Start(void);
+	void DisplayStartScreen();  // Method to display start screen
 	virtual void Stop(void);
 
 	// Declaration of IKeyboardListener interface ////////////////////////////////
@@ -52,6 +53,9 @@ private:
 	shared_ptr<GUILabel> mScoreLabel;
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
+	shared_ptr<GUILabel>mStartLabel;
+
+	bool startScreenActive;
 
 	uint mLevel;
 	uint mAsteroidCount;

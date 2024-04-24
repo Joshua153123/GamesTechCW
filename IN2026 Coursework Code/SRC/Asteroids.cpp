@@ -47,6 +47,9 @@ void Asteroids::Start()
 	// Add this class as a listener of the score keeper
 	mScoreKeeper.AddListener(thisPtr);
 
+	//initialize start screen boolean
+	startScreenActive = true;
+
 	// Create an ambient light to show sprite textures
 	GLfloat ambient_light[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	GLfloat diffuse_light[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -58,22 +61,30 @@ void Asteroids::Start()
 	Animation *asteroid1_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid1", 128, 8192, 128, 128, "asteroid1_fs.png");
 	Animation *spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
 
-	// Create a spaceship and add it to the world
-	mGameWorld->AddObject(CreateSpaceship());
-	// Create some asteroids and add them to the world
-	CreateAsteroids(10);
-
-	//Create the GUI
-	CreateGUI();
-
 	// Add a player (watcher) to the game world
 	mGameWorld->AddListener(&mPlayer);
 
 	// Add this class as a listener of the player
 	mPlayer.AddListener(thisPtr);
 
+
+	if (startScreenActive) {
+		DisplayStartScreen();
+	}
+
+	else {// Create a spaceship and add it to the world
+		mGameWorld->AddObject(CreateSpaceship());
+		// Create some asteroids and add them to the world
+		CreateAsteroids(10);
+
+		//Create the GUI
+		CreateGUI();
+
+	}
 	// Start the game
 	GameSession::Start();
+
+	
 }
 
 /** Stop the current game. */
@@ -87,13 +98,31 @@ void Asteroids::Stop()
 
 void Asteroids::OnKeyPressed(uchar key, int x, int y)
 {
-	switch (key)
-	{
-	case ' ':
-		mSpaceship->Shoot();
-		break;
-	default:
-		break;
+	if (startScreenActive) {
+		// Remove the start screen and deactivate the flag
+		startScreenActive = false;
+		mGameDisplay->GetContainer()->RemoveComponent(static_pointer_cast<GUIComponent>(mStartLabel));
+		// Create a spaceship and add it to the world
+		mGameWorld->AddObject(CreateSpaceship());
+		// Create some asteroids and add them to the world
+		CreateAsteroids(10);
+
+		//Create the GUI
+		CreateGUI();
+
+		// Start the game
+		GameSession::Start();
+		
+	}
+	else {
+		switch (key)
+		{
+		case ' ':
+			mSpaceship->Shoot();
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -101,6 +130,23 @@ void Asteroids::OnKeyReleased(uchar key, int x, int y) {}
 
 void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 {
+
+	if (startScreenActive) {
+		// Remove the start screen and deactivate the flag
+		startScreenActive = false;
+		mGameDisplay->GetContainer()->RemoveComponent(static_pointer_cast<GUIComponent>(mStartLabel));
+		// Create a spaceship and add it to the world
+		mGameWorld->AddObject(CreateSpaceship());
+		// Create some asteroids and add them to the world
+		CreateAsteroids(10);
+
+		//Create the GUI
+		CreateGUI();
+
+		// Start the game
+		GameSession::Start();
+
+	}
 	switch (key)
 	{
 	// If up arrow key is pressed start applying forward thrust
@@ -210,10 +256,27 @@ void Asteroids::CreateAsteroids(const uint num_asteroids)
 	}
 }
 
+
+void Asteroids::DisplayStartScreen() {
+	// Add a (transparent) border around the edge of the game display
+	mGameDisplay->GetContainer()->SetBorder(GLVector2i(10, 10));
+
+
+	// Create the start screen label
+	mStartLabel = make_shared<GUILabel>("Press any key to start");
+	mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_MIDDLE);
+	mStartLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+	shared_ptr<GUIComponent> start_component = static_pointer_cast<GUIComponent>(mStartLabel);
+	mGameDisplay->GetContainer()->AddComponent(start_component, GLVector2f(0.5f, 0.5f));
+
+	// Set the start screen active flag
+	startScreenActive = true;
+}
+
 void Asteroids::CreateGUI()
 {
 	// Add a (transparent) border around the edge of the game display
-	mGameDisplay->GetContainer()->SetBorder(GLVector2i(10, 10));
+	//mGameDisplay->GetContainer()->SetBorder(GLVector2i(10, 10));
 	// Create a new GUILabel and wrap it up in a shared_ptr
 	mScoreLabel = make_shared<GUILabel>("Score: 0");
 	// Set the vertical alignment of the label to GUI_VALIGN_TOP
