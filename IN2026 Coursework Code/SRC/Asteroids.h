@@ -57,6 +57,8 @@ private:
 
 	bool startScreenActive;
 
+	shared_ptr<HighScoreManager> highScoreManager;
+
 	uint mLevel;
 	uint mAsteroidCount;
 
