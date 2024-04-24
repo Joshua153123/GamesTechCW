@@ -9,6 +9,7 @@
 #include "ScoreKeeper.h"
 #include "Player.h"
 #include "IPlayerListener.h"
+#include "HighScoreManager.h"
 
 class GameObject;
 class Spaceship;
@@ -48,16 +49,21 @@ public:
 	// Override the default implementation of ITimerListener ////////////////////
 	void OnTimer(int value);
 
+	void UpdateHighScoreDisplay();
+	void RestartGame();
+
 private:
 	shared_ptr<Spaceship> mSpaceship;
 	shared_ptr<GUILabel> mScoreLabel;
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
-	shared_ptr<GUILabel>mStartLabel;
+	shared_ptr<GUILabel> mStartLabel;
+	shared_ptr<GUILabel> mHighScoreLabel;
 
 	bool startScreenActive;
+	bool gameOver;
+	
 
-	shared_ptr<HighScoreManager> highScoreManager;
 
 	uint mLevel;
 	uint mAsteroidCount;
@@ -71,9 +77,12 @@ private:
 	const static uint SHOW_GAME_OVER = 0;
 	const static uint START_NEXT_LEVEL = 1;
 	const static uint CREATE_NEW_PLAYER = 2;
+	const static uint RESTART_GAME = 3; 
 
 	ScoreKeeper mScoreKeeper;
 	Player mPlayer;
+
+	HighScoreManager mHighScoreManager;
 };
 
 #endif

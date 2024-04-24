@@ -48,8 +48,12 @@ void Asteroids::Start()
 	// Add this class as a listener of the score keeper
 	mScoreKeeper.AddListener(thisPtr);
 
+
+	
+
 	//initialize start screen boolean
 	startScreenActive = true;
+	gameOver = false;
 
 	// Create an ambient light to show sprite textures
 	GLfloat ambient_light[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -115,6 +119,22 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 		GameSession::Start();
 		
 	}
+	if (gameOver) {
+		startScreenActive = true;
+		gameOver = false;
+		mGameDisplay->GetContainer()->RemoveComponent(static_pointer_cast<GUIComponent>(mStartLabel));
+		// Create a spaceship and add it to the world
+		mGameWorld->AddObject(CreateSpaceship());
+		// Create some asteroids and add them to the world
+		CreateAsteroids(10);
+
+		//Create the GUI
+		CreateGUI();
+
+		// Start the game
+		GameSession::Start();
+
+	}
 	else {
 		switch (key)
 		{
@@ -146,6 +166,7 @@ void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 
 		// Start the game
 		GameSession::Start();
+
 
 	}
 	switch (key)
@@ -214,7 +235,13 @@ void Asteroids::OnTimer(int value)
 
 	if (value == SHOW_GAME_OVER)
 	{
+		gameOver = true;
 		mGameOverLabel->SetVisible(true);
+	}
+
+	if (value == RESTART_GAME)
+	{
+		RestartGame();  // Call a method to restart the game
 	}
 
 }
@@ -295,6 +322,12 @@ void Asteroids::CreateGUI()
 	shared_ptr<GUIComponent> lives_component = static_pointer_cast<GUIComponent>(mLivesLabel);
 	mGameDisplay->GetContainer()->AddComponent(lives_component, GLVector2f(0.0f, 0.0f));
 
+
+	mHighScoreLabel = make_shared<GUILabel>("High Scores:\n");
+	mHighScoreLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_TOP);
+	shared_ptr<GUIComponent> highScoreComponent = static_pointer_cast<GUIComponent>(mHighScoreLabel);
+	mGameDisplay->GetContainer()->AddComponent(highScoreComponent, GLVector2f(1.0f, 1.0f));
+
 	// Create a new GUILabel and wrap it up in a shared_ptr
 	mGameOverLabel = shared_ptr<GUILabel>(new GUILabel("GAME OVER"));
 	// Set the horizontal alignment of the label to GUI_HALIGN_CENTER
@@ -310,6 +343,17 @@ void Asteroids::CreateGUI()
 
 }
 
+void Asteroids::UpdateHighScoreDisplay() {
+	std::vector<int> scores = mHighScoreManager.GetHighScores();
+	std::ostringstream ss;
+	ss << "High Scores:\n";
+	for (int score : scores) {
+		ss << score << "\n";
+	}
+	mHighScoreLabel->SetText(ss.str());
+}
+
+
 void Asteroids::OnScoreChanged(int score)
 {
 	// Format the score message using an string-based stream
@@ -318,6 +362,12 @@ void Asteroids::OnScoreChanged(int score)
 	// Get the score message as a string
 	std::string score_msg = msg_stream.str();
 	mScoreLabel->SetText(score_msg);
+
+	// Update high score
+	mHighScoreManager.AddScore(score);
+
+	// Update high score display
+	UpdateHighScoreDisplay();
 }
 
 void Asteroids::OnPlayerKilled(int lives_left)
@@ -338,9 +388,11 @@ void Asteroids::OnPlayerKilled(int lives_left)
 	{ 
 		SetTimer(1000, CREATE_NEW_PLAYER); 
 	}
-	else
+	else if(lives_left == 0)
 	{
 		SetTimer(500, SHOW_GAME_OVER);
+		UpdateHighScoreDisplay();  // add this line to update display when game over
+		mHighScoreLabel->SetVisible(true);  // make high score label visible
 	}
 }
 
@@ -355,6 +407,32 @@ shared_ptr<GameObject> Asteroids::CreateExplosion()
 	explosion->Reset();
 	return explosion;
 }
+
+void Asteroids::RestartGame()
+{
+	if (startScreenActive) {
+		DisplayStartScreen();
+	}
+
+	else {// Create a spaceship and add it to the world
+		mGameWorld->AddObject(CreateSpaceship());
+		// Create some asteroids and add them to the world
+		CreateAsteroids(10);
+
+		//Create the GUI
+		CreateGUI();
+
+
+		// Start the game session again
+		GameSession::Start();
+	}
+}
+
+
+
+
+
+
 
 
 
